@@ -1,0 +1,6 @@
+public/css
+public/js
+dist
+node_modules
+*.log
+*.swp
