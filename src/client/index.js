@@ -43,7 +43,6 @@ class PPOverlay extends React.Component {
         <div>
           <div>
             <a id="download" target="_blank" href="#">Download image</a>
-            <button id="fb" onClick={this.fbLogin}>Upload to Facebook</button>
           </div>
           <canvas id="preview"></canvas>
         </div>
@@ -52,6 +51,7 @@ class PPOverlay extends React.Component {
 
     return (
       <div>
+        <button id="fb" onClick={this.fbLogin}>Upload to Facebook</button>
         <Dropzone onDrop={this.onDrop} multiple={false}>
           <div>Try dropping some files here, or click to select files to upload.</div>
         </Dropzone>
@@ -79,6 +79,10 @@ class PPOverlay extends React.Component {
 
     FB.login(resp => {
       console.log(resp);
+
+      FB.api('/me/picture?width=576&height=576', me => {
+        console.log(me);
+      });
     }, options);
   };
 
