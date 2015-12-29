@@ -4,6 +4,31 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Dropzone from 'react-dropzone';
 
+//var fbAppId = '1120226921328810';
+var fbAppId = '1120235647994604';
+// facebook init
+window.fbAsyncInit = function() {
+  FB.init({
+    appId      : fbAppId,
+    xfbml      : true,
+    version    : 'v2.5'
+  });
+};
+
+loadFacebookAPI(document, 'script', 'facebook-jssdk');
+
+// load facebook api
+function loadFacebookAPI(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+
+  js = d.createElement(s);
+  js.id = id;
+  js.src = "//connect.facebook.net/en_US/sdk.js";
+
+  fjs.parentNode.insertBefore(js, fjs);
+}
+
 class PPOverlay extends React.Component {
   state = {
     file: null
@@ -16,7 +41,10 @@ class PPOverlay extends React.Component {
     if (this.state.file) {
       preview = (
         <div>
-          <div><a id="download" target="_blank" href="#">Download image!</a></div>
+          <div>
+            <a id="download" target="_blank" href="#">Download image</a>
+            <button id="fb" onClick={this.fbLogin}>Upload to Facebook</button>
+          </div>
           <canvas id="preview"></canvas>
         </div>
       );
@@ -42,6 +70,16 @@ class PPOverlay extends React.Component {
 
       this.loadImage(this.state.file.preview);
     });
+  };
+
+  fbLogin = () => {
+    var options = {
+      scope: 'publish_actions'
+    };
+
+    FB.login(resp => {
+      console.log(resp);
+    }, options);
   };
 
   onDrop = (files) => {
@@ -78,3 +116,4 @@ ReactDOM.render(
   <PPOverlay />,
   document.getElementById('pp-overlay')
 );
+
