@@ -43,6 +43,7 @@ class PPOverlay extends React.Component {
         <div>
           <div>
             <a id="download" target="_blank" href="#">Download image</a>
+            <button id="fb" onClick={this.fbUploadPic}>Upload Facebook Pic</button>
           </div>
           <canvas id="preview"></canvas>
         </div>
@@ -51,7 +52,7 @@ class PPOverlay extends React.Component {
 
     return (
       <div>
-        <button id="fb" onClick={this.fbLogin}>Upload to Facebook</button>
+        <button id="fb" onClick={this.fbGetPP}>Get Facebook Profile Pic</button>
         <Dropzone onDrop={this.onDrop} multiple={false}>
           <div>Try dropping some files here, or click to select files to upload.</div>
         </Dropzone>
@@ -68,11 +69,13 @@ class PPOverlay extends React.Component {
       let node = ReactDOM.findDOMNode(this);
       if (!node) return;
 
-      this.loadImage(this.state.file.preview);
+      if (this.state.file) {
+        this.loadImage(this.state.file);
+      }
     });
   };
 
-  fbLogin = () => {
+  fbGetPP = () => {
     var options = {
       scope: 'publish_actions'
     };
@@ -82,13 +85,16 @@ class PPOverlay extends React.Component {
 
       FB.api('/me/picture?width=576&height=576', me => {
         console.log(me);
+        this.setState({ file: me.data.url });
       });
     }, options);
   };
 
+  fbUploadPic = () => {};
+
   onDrop = (files) => {
     console.log('Received files: ', files);
-    if (files.length > 0) this.setState({ file: files[0] });
+    if (files.length > 0) this.setState({ file: files[0].preview });
   };
 
   loadImage(imgSrc) {
