@@ -3,6 +3,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Dropzone from 'react-dropzone';
+import $ from 'jquery';
 
 var fbAppId = '1120226921328810';
 //var fbAppId = '1120235647994604';
@@ -50,19 +51,32 @@ function dataURItoBlob(dataURI) {
     return new Blob([ia], { type: mimeString });
 }
 
-/*function dataURItoBlob(dataURI) {
-    var binary = atob(dataURI.split(',')[1]);
-    var array = [];
-    for(var i = 0; i < binary.length; i++) {
-        array.push(binary.charCodeAt(i));
-    }
+function xhr(url, method='GET', data={}, contentLength=0) {
+  return new Promise(function(resolve, reject) {
+    console.log(`Grabbing: ${url}`);
+    var ajax = new XMLHttpRequest();
+    ajax.onreadystatechange = function() {
+      if (ajax.readyState != XMLHttpRequest.DONE) return;
+      if (ajax.status != 200) {
+        reject(ajax);
+        return;
+      }
+      resolve(ajax);
+    };
 
-    return new Blob([new Uint8Array(array)], {type: 'image/jpeg'});
-}*/
+    ajax.open(method, url, true);
+    ajax.setRequestHeader("Content-Type",`multipart/form-data; boundary=---------------------------${contentLength}`);
+    //ajax.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+
+    ajax.send(data);
+  });
+}
 
 class PPOverlay extends React.Component {
   state = {
-    file: null
+    file: null,
+    accessToken: null,
+    userID: null
   };
 
   constructor(props) { super(props); };
@@ -116,7 +130,11 @@ class PPOverlay extends React.Component {
 
       FB.api('/me/picture?width=576&height=576', me => {
         console.log(me);
-        this.setState({ file: me.data.url });
+        this.setState({
+          file: me.data.url,
+          accessToken: resp.authResponse.accessToken,
+          userID: resp.authResponse.userID
+        });
       });
     }, options);
   };
@@ -136,15 +154,35 @@ class PPOverlay extends React.Component {
       if (albumId) {
         let canvas = document.getElementById('preview');
 
-        let imgData = canvas.toDataURL();
+        let imgData = canvas.toDataURL('image/jpeg');
         imgData = dataURItoBlob(imgData);
 
         var formData = new FormData();
         formData.append('source', imgData);
+        //formData.append('url', 'http://farm4.staticflickr.com/3332/3451193407_b7f047f4b4_o.jpg');
         formData.append('message', 'Spartan');
 
         console.log(imgData);
-        FB.api(`/${albumId}/photos`, 'POST', formData, resp => { console.log(resp); });
+        let fbUrl = `https://graph.facebook.com/${this.state.userID}/photos?access_token=${this.state.accessToken}`;
+
+        $.ajax({
+          url: fbUrl,
+          type: "POST",
+          data: formData,
+          processData: false,
+          contentType: false,
+          cache: false,
+          success: function(data) {
+            console.log(data);
+          },
+          error: function(shr, status, data) {
+            console.log(data);
+          }
+        });
+        /*xhr(fbUrl, 'POST', formData, imgData.length)
+          .then(resp => { console.log(resp); })
+          .catch(e => { console.log(JSON.parse(e.response)); });*/
+        //FB.api(`/${albumId}/photos`, 'POST', formData, resp => { console.log(resp); });
       }
     });
   };
