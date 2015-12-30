@@ -4,8 +4,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Dropzone from 'react-dropzone';
 
-//var fbAppId = '1120226921328810';
-var fbAppId = '1120235647994604';
+var fbAppId = '1120226921328810';
+//var fbAppId = '1120235647994604';
 // facebook init
 window.fbAsyncInit = function() {
   FB.init({
@@ -28,6 +28,37 @@ function loadFacebookAPI(d, s, id) {
 
   fjs.parentNode.insertBefore(js, fjs);
 }
+
+function dataURItoBlob(dataURI) {
+    // convert base64/URLEncoded data component to raw binary data held in a string
+    var byteString;
+    if (dataURI.split(',')[0].indexOf('base64') >= 0) {
+      byteString = atob(dataURI.split(',')[1]);
+    } else {
+      byteString = unescape(dataURI.split(',')[1]);
+    }
+
+    // separate out the mime component
+    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+    // write the bytes of the string to a typed array
+    var ia = new Uint8Array(byteString.length);
+    for (var i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+
+    return new Blob([ia], { type: mimeString });
+}
+
+/*function dataURItoBlob(dataURI) {
+    var binary = atob(dataURI.split(',')[1]);
+    var array = [];
+    for(var i = 0; i < binary.length; i++) {
+        array.push(binary.charCodeAt(i));
+    }
+
+    return new Blob([new Uint8Array(array)], {type: 'image/jpeg'});
+}*/
 
 class PPOverlay extends React.Component {
   state = {
@@ -90,7 +121,33 @@ class PPOverlay extends React.Component {
     }, options);
   };
 
-  fbUploadPic = () => {};
+  fbUploadPic = () => {
+    FB.api('/me/albums', albums => {
+      console.log(albums);
+      let albumId;
+      for (let i = 0; i < albums.data.length; i++) {
+        let album = albums.data[i];
+        if (album.name != 'Profile Pictures') continue;
+
+        albumId = album.id;
+        break;
+      }
+
+      if (albumId) {
+        let canvas = document.getElementById('preview');
+
+        let imgData = canvas.toDataURL();
+        imgData = dataURItoBlob(imgData);
+
+        var formData = new FormData();
+        formData.append('source', imgData);
+        formData.append('message', 'Spartan');
+
+        console.log(imgData);
+        FB.api(`/${albumId}/photos`, 'POST', formData, resp => { console.log(resp); });
+      }
+    });
+  };
 
   onDrop = (files) => {
     console.log('Received files: ', files);
@@ -103,7 +160,9 @@ class PPOverlay extends React.Component {
     let ctx = canvas.getContext('2d');
 
     let spartanImg = new Image();
+    spartanImg.setAttribute('crossOrigin', 'anonymous');
     let profileImg = new Image();
+    profileImg.setAttribute('crossOrigin', 'anonymous');
 
     profileImg.onload = function() {
       canvas.width = this.width;
