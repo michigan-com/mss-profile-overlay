@@ -24,8 +24,8 @@ function bundleOpts() {
     src: './src/client/',
     dest: './public/js/',
     babel: {
-      presets: ['es2015', 'react', 'stage-0'],
-      plugins: ['transform-runtime']
+      presets: ['es2015', 'react', 'stage-0']
+      //plugins: ['transform-runtime']
     },
     browserify: browserifyOpts
   };
