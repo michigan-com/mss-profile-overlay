@@ -49,7 +49,7 @@ function dataURItoBlob(dataURI) {
     return new Blob([ia], { type: mimeString });
 }
 
-function xhr(url, method='GET', data={}, contentLength=0) {
+function xhr(url, method='GET', data={}) {
   return new Promise(function(resolve, reject) {
     console.log(`Grabbing: ${url}`);
     var ajax = new XMLHttpRequest();
@@ -160,7 +160,7 @@ class PPOverlay extends React.Component {
 
         let fbUrl = `https://graph.facebook.com/${this.state.userID}/photos?access_token=${this.state.accessToken}`;
 
-        xhr(fbUrl, 'POST', formData, imgData.length)
+        xhr(fbUrl, 'POST', formData)
           .then(resp => { console.log(JSON.parse(resp.response)); })
           .catch(e => { console.log(JSON.parse(e.response)); });
       }
