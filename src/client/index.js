@@ -136,35 +136,24 @@ class PPOverlay extends React.Component {
   };
 
   fbUploadPic = () => {
-    FB.api('/me/albums', albums => {
-      console.log(albums);
+    let canvas = document.getElementById('preview');
 
-      let albumId;
-      for (let i = 0; i < albums.data.length; i++) {
-        let album = albums.data[i];
-        if (album.name != 'Profile Pictures') continue;
+    let imgData = canvas.toDataURL('image/jpeg');
+    imgData = dataURItoBlob(imgData);
 
-        albumId = album.id;
-        break;
-      }
+    var formData = new FormData();
+    formData.append('source', imgData);
+    formData.append('message', 'Spartan Overlay');
 
-      if (albumId) {
-        let canvas = document.getElementById('preview');
+    let fbUrl = `https://graph.facebook.com/${this.state.userID}/photos?access_token=${this.state.accessToken}`;
 
-        let imgData = canvas.toDataURL('image/jpeg');
-        imgData = dataURItoBlob(imgData);
-
-        var formData = new FormData();
-        formData.append('source', imgData);
-        formData.append('message', 'Spartan Overlay');
-
-        let fbUrl = `https://graph.facebook.com/${this.state.userID}/photos?access_token=${this.state.accessToken}`;
-
-        xhr(fbUrl, 'POST', formData)
-          .then(resp => { console.log(JSON.parse(resp.response)); })
-          .catch(e => { console.log(JSON.parse(e.response)); });
-      }
-    });
+    xhr(fbUrl, 'POST', formData)
+      .then(resp => {
+        let data = JSON.parse(resp.response);
+        console.log(data);
+        window.location = `http://www.facebook.com/photo.php?fbid=${data.id}&makeprofile=1`;
+      })
+      .catch(e => { console.log(JSON.parse(e.response)); });
   };
 
   onDrop = (files) => {
