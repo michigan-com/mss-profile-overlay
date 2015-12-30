@@ -3,10 +3,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Dropzone from 'react-dropzone';
-import $ from 'jquery';
 
 var fbAppId = '1120226921328810';
-//var fbAppId = '1120235647994604';
 // facebook init
 window.fbAsyncInit = function() {
   FB.init({
@@ -65,8 +63,6 @@ function xhr(url, method='GET', data={}, contentLength=0) {
     };
 
     ajax.open(method, url, true);
-    ajax.setRequestHeader("Content-Type",`multipart/form-data; boundary=---------------------------${contentLength}`);
-    //ajax.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
 
     ajax.send(data);
   });
@@ -142,6 +138,7 @@ class PPOverlay extends React.Component {
   fbUploadPic = () => {
     FB.api('/me/albums', albums => {
       console.log(albums);
+
       let albumId;
       for (let i = 0; i < albums.data.length; i++) {
         let album = albums.data[i];
@@ -159,30 +156,13 @@ class PPOverlay extends React.Component {
 
         var formData = new FormData();
         formData.append('source', imgData);
-        //formData.append('url', 'http://farm4.staticflickr.com/3332/3451193407_b7f047f4b4_o.jpg');
-        formData.append('message', 'Spartan');
+        formData.append('message', 'Spartan Overlay');
 
-        console.log(imgData);
         let fbUrl = `https://graph.facebook.com/${this.state.userID}/photos?access_token=${this.state.accessToken}`;
 
-        $.ajax({
-          url: fbUrl,
-          type: "POST",
-          data: formData,
-          processData: false,
-          contentType: false,
-          cache: false,
-          success: function(data) {
-            console.log(data);
-          },
-          error: function(shr, status, data) {
-            console.log(data);
-          }
-        });
-        /*xhr(fbUrl, 'POST', formData, imgData.length)
-          .then(resp => { console.log(resp); })
-          .catch(e => { console.log(JSON.parse(e.response)); });*/
-        //FB.api(`/${albumId}/photos`, 'POST', formData, resp => { console.log(resp); });
+        xhr(fbUrl, 'POST', formData, imgData.length)
+          .then(resp => { console.log(JSON.parse(resp.response)); })
+          .catch(e => { console.log(JSON.parse(e.response)); });
       }
     });
   };
